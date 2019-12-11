@@ -1,0 +1,19 @@
+h1 {
+    font-size: 100 px;
+    font-family: American Typewriter, serif;
+    color: green;
+  }
+  
+  h2 {
+    font-size: 100 px;
+    font-family: monospace;
+  
+  }
+  canvas {
+    border: 3px solid red;
+  }
+  
+  progress {
+    width: 500px;
+  }
+  
