@@ -17,10 +17,14 @@ class Sprite {
   get radius() {
     return this.diameter / 2;
   }
+  move(target) {
+    this.x += this.speed * (target.x - this.x);
+    this.y += this.speed * (target.y - this.y);
+  }
 }
 
 class Scarecrow {
-  constructor() { 
+  constructor() {
     this.x = random(width);
     this.y = random(height);
   }
@@ -30,18 +34,18 @@ class Scarecrow {
   }
   display() {
     text("🚀", this.x, this.y);
-}
+  }
 }
 
 class Player extends Sprite {
   constructor() {
     super(0, 0, "white", 20);
     this.health = 100;
+    this.speed = 0.3;
   }
   render() {
     fill(this.color);
-    ellipse((this.x = mouseX), (this.y = mouseY), this.diameter, this.diameter);
-    // scale(1);
+    circle(this.x, this.y, this.diameter);
     fill("yellow");
     noStroke();
     ellipse(this.x, this.y, 50, 50);
@@ -57,34 +61,31 @@ class Player extends Sprite {
   }
   takeHit() {
     this.health -= 1;
-    console.log("oh");
     progressBar.value = this.health;
   }
-  move() {
-    this.x += this.speed * (mouseX - this.x);
-    this.y += this.speed * (mouseY - this.y);
+  addHealth() {
+    this.health += 2;
+    if (this.health > 100) {
+      this.health = 100;
+    }
+    progressBar.value = this.health;
   }
 }
-
 
 class PowerUp {
   constructor() {
     this.x = random(width);
     this.y = random(height);
+    this.diameter = 20;
   }
   reposition() {
     this.x = random(width);
     this.y = random(height);
   }
   display() {
-    text("💖", this.x, this.y);
-  }
-  addHealth() {
-    this.health += 10;
-    progressBar.value = this.health; 
+    text("💖", this.x, this.y, this.diameter);
   }
 }
-
 
 class Enemy extends Sprite {
   constructor(x, y, speed) {
@@ -112,10 +113,6 @@ class Enemy extends Sprite {
     fill("red");
     noStroke();
     ellipse(this.x, this.y + 16, 6, 6);
-  }
-  move() {
-    this.x += this.speed * (mouseX - this.x);
-    this.y += this.speed * (mouseY - this.y);
   }
 }
 
@@ -145,23 +142,15 @@ let enemies = [
   new Enemy(...randomPointOnCanvas(), 0.005)
 ];
 
-function setup() {
-  createCanvas(width, height);
-  noStroke();
-  heart = new PowerUp();
-  spaceship = new Scarecrow();
-}
-
-
-function checkForPowerUp(PowerUp, player) {
-  if (collided(PowerUp, player)) {
-    player.addHealth();
-  }
-}
-
 function checkForDamage(enemy, player) {
   if (collided(player, enemy)) {
     player.takeHit();
+  }
+}
+
+function checkForHealth(heart, player) {
+  if (collided(player, heart)) {
+    player.addHealth();
   }
 }
 
@@ -173,6 +162,7 @@ function adjustSprites() {
     }
   }
 }
+
 function pushOff(c1, c2) {
   let [dx, dy] = [c2.x - c1.x, c2.y - c1.y];
   const distance = Math.hypot(dx, dy);
@@ -186,6 +176,7 @@ function pushOff(c1, c2) {
     c2.y += adjustY;
   }
 }
+
 function backgroundGame() {
   background(0, 0, 35, 25);
   const galaxy = {
@@ -194,19 +185,7 @@ function backgroundGame() {
     size: random(1, 6)
   };
   fill("white");
-  //ellipse(mouseX, mouseY, galaxy.size, galaxy.size);
   ellipse(galaxy.locationX, galaxy.locationY, galaxy.size, galaxy.size);
-}
-function levelUp() {
-  //   if (level = 1){
-  //   if (timer = 60 && timer > 0) {
-  //     timer --;
-  //   }
-  //   if (timer == 0) {
-  //     text("GAME OVER", width/2, height*0.7);
-  //   }
-  // }
-  //   //level++=
 }
 
 function showTimer() {
@@ -216,45 +195,59 @@ function showTimer() {
 }
 
 function startNewLevel() {
-     level++;
-    levelSpan.textContent = level;
-    timer = 5;
-    spaceship.reposition();
-    heart.reposition();
-    enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.03));
-    enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.05));
-  
+  level++;
+  levelSpan.textContent = level;
+  timer = 5;
+  spaceship.reposition();
+  heart.reposition();
+  enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.03));
+  enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.05));
+  enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.07));
+  enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.02));
+  enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.08));
+  enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.02));
 }
 
-function keyPressed(){
-    if (keyCode === 75){
-        enemies.pop();
-    }
+function keyPressed() {
+  if (keyCode === 75) {
+    enemies.pop();
+  }
 }
-  
+
+function setup() {
+  createCanvas(width, height);
+  noStroke();
+  heart = new PowerUp();
+  spaceship = new Scarecrow();
+}
+
 function draw() {
   backgroundGame();
   showTimer();
-  checkForPowerUp(PowerUp, player)
   player.render();
+  player.move({ x: mouseX, y: mouseY });
   enemies.forEach(enemy => {
     enemy.render();
     checkForDamage(enemy, player);
-    enemy.move();
+    enemy.move(level % 5 === 0 ? spaceship : player);
   });
   adjustSprites();
   if (frameCount % 60 == 0 && timer > 0) {
     timer--;
   }
   if (timer === 0) {
- startNewLevel()
+    startNewLevel();
   }
   if (timer === 5) {
     heart.display();
+  }
+  if (level % 5 === 0) {
     spaceship.display();
   }
+  checkForHealth(heart, player);
   if (progressBar.value === 0) {
     noLoop();
+    fill("red");
     text("GAME OVER", width / 2, height / 2.6);
   }
 }

@@ -1,13 +1,16 @@
 h1 {
     font-size: 100 px;
-    font-family: American Typewriter, serif;
+    font-family: Luminari, fantasy;
     color: green;
   }
   
   h2 {
     font-size: 100 px;
-    font-family: monospace;
+    font-family: Luminari, fantasy;
+  }
   
+  h3 {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
   }
   canvas {
     border: 3px solid red;
