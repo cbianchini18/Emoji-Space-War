@@ -225,6 +225,13 @@ function startNewLevel() {
     enemies.push(new Enemy(...randomPointOnCanvas(), Math.random() * 0.05));
   
 }
+
+function keyPressed(){
+    if (keyCode === 75){
+        enemies.pop();
+    }
+}
+  
 function draw() {
   backgroundGame();
   showTimer();
